@@ -1,5 +1,7 @@
 const express = require('express');
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
+const typeDefs = require('./schema');
+const resolvers = require('./resolvers');
 
 require('dotenv').config();
 const db = require('./db');
@@ -14,49 +16,17 @@ let notes = [
     {id: '3', content: 'Moja trzecia piękna notatka', author: 'Walera'},
 ];
 
-
-const typeDefs = gql`
-    type Note {
-        id: ID!,
-        content: String!,
-        author: String!
-    }
-    type Query {
-        hello: String!,
-        notes: [Note!]!,
-        note(id: ID!): Note!
-    }
-    type Mutation {
-        newNote(content: String!): Note!
-    }
-`;
-
-const resolvers = {
-    Query: {
-        hello: () => 'Hello world!',
-        notes: async (parent, args) => {
-            return await models.Note.find();
-        },
-        note: async (parent, args) => {
-            return await models.Note.findById(args.id);
-        }
-    },
-    Mutation: {
-        newNote: async (parent, args) => {
-            return await models.Note.create({
-                content: args.content,
-                author: 'Adam Scott'
-            })
-        }
-    }
-};
-
-
 const app = express();
 
 db.connect(DB_HOST);
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: () => {
+        return { models }
+    }
+});
 
 server.applyMiddleware({ app, path: '/api' });
 
