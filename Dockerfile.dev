@@ -1,0 +1,9 @@
+FROM node:lts
+
+# set working directory
+WORKDIR /app
+
+COPY docker/wait-for-it.sh docker/wait-for-it.sh
+
+ENTRYPOINT sh /app/docker/entrypoint-dev.sh
+
